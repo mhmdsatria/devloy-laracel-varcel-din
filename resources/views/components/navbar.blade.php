@@ -2,46 +2,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
 
 
-<nav class="bg-white shadow-lg shadow-gray-500/50">
+<nav class="sticky top-0 z-50 bg-white shadow-lg shadow-gray-500/50 w-full overflow-hidden ">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-center">
-            <div class="flex space-x-4 relative">
-                <x-nav-link href="/beranda" :active="request()->is('beranda')">Beranda</x-nav-link>
-                <!-- Dropdown Profile -->
-                <div class="relative">
-                    <button id="dropdownProfileButton" data-dropdown-toggle="dropdownProfile"
-                        class="px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white 
-        {{ request()->is('visi-misi') || request()->is('tujuan') || request()->is('motto') || request()->is('struktur-organisasi') ? 'bg-gray-900 text-white' : '' }}">
-                        Profile
-                        <svg class="w-2.5 h-2.5 ml-2 inline-block" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 10 6">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 4 4 4-4" />
-                        </svg>
-                    </button>
-                    <!-- Dropdown menu -->
-                    <div id="dropdownProfile"
-                        class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-600">
-                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-400">
-                            <li>
-                                <x-nav-link href="/visi-misi">Visi Misi</x-nav-link>
-                            </li>
-                            <li>
-                                <x-nav-link href="/tujuan">Tujuan</x-nav-link>
-                            </li>
-                            <li>
-                                <x-nav-link href="/motto">Motto</x-nav-link>
-                            </li>
-                            <li>
-                                <x-nav-link href="/struktur-organisasi">Struktur
-                                    Organisasi</x-nav-link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <x-nav-link href="/pelayanan" :active="request()->is('pelayanan')">Pelayanan</x-nav-link>
-                <x-nav-link href="/informasi" :active="request()->is('informasi')">Informasi</x-nav-link>
-                <x-nav-link href="/kontak" :active="request()->is('kontak')">Kontak</x-nav-link>
+        <div class="flex justify-between items-center h-16">
+            <!-- Nama Puskesmas di Sebelah Kiri -->
+            <h1 class="text-gray-800 text-2xl font-bold">PUSKESMAS CISAAT</h1>
+
+            <!-- Navigasi di Sebelah Kanan -->
+            <div class="flex space-x-4">
+                <x-nav-link href="/" :active="request()->is('beranda')">Beranda</x-nav-link>
+                <x-nav-link href="/profile" :active="request()->is('profile')">Profile</x-nav-link>
+                <x-nav-link href="/layanan" :active="request()->is('layanan')">Layanan</x-nav-link>
+                <x-nav-link href="{{ route('gallery.index') }}" :active="request()->is('gallery*')">Dokumentasi</x-nav-link>
+                <x-nav-link href="/berita" :active="request()->is('berita')">Berita</x-nav-link>
+                <x-nav-link href="/pagelogin" :active="request()->is('pagelogin')">Kontak</x-nav-link>
             </div>
         </div>
     </div>

@@ -1,91 +1,110 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{DB, Route};
+use App\Models\{Gallery, Post, Profile, Pelayanan, Statistic};
+use App\Http\Controllers\{
+    GalleryController,
+    ProfileController,
+    StatisticController,
+    BerandaController
+};
+use App\Http\Controllers\Admin\{
+    PostController,
+    PelayananController
+};
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-Route::get('/berita', function () {
-    return view('berita');
-});
-
-Route::get('/beranda', function () {
-    return view('beranda');
-});
-
-Route::get('/visi-misi', function () {
-    return view('visiMisi');
-});
-
-Route::get('/kontak', function () {
-    return view('kontak');
-});
-
-Route::get('/pelayanan', function () {
-    return view('pelayanan');
-});
-
-Route::get('/informasi', function () {
-    return view('informasi');
-});
-
-Route::get('/motto', function () {
-    return view('motto');
-});
-
-Route::get('/tujuan', function () {
-    return view('tujuan');
-});
+/**
+ * --------------------------------------------
+ * Routes Utama (Public)
+ * --------------------------------------------
+ */
 Route::get('/', function () {
-    return view('layouts.master');
+    $galleries = Gallery::all(); 
+    $latestPosts = Post::latest()->take(6)->get();
+    $pelayanans = Pelayanan::take(6)->get();
+
+    $stat = Statistic::firstOrCreate([], [
+        'total_views' => 0,
+        'active_services' => 22
+    ]);
+    $stat->increment('total_views');
+
+    return view('beranda', [
+        'title' => 'Beranda',
+        'galleries' => $galleries,
+        'beranda' => $latestPosts,
+        'pelayanans' => $pelayanans,
+        'stat' => $stat,
+    ]);
+})->name('beranda');
+
+Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda.index');
+Route::get('/dokumentasi', [GalleryController::class, 'dokumentasi'])->name('dokumentasi');
+Route::resource('gallery', GalleryController::class); // Public akses galeri
+
+/**
+ * --------------------------------------------
+ * Routes Halaman Statis
+ * --------------------------------------------
+ */
+Route::view('/profile', 'profile')->name('profile');
+Route::view('/visi-misi', 'visiMisi')->name('visiMisi');
+Route::view('/kontak', 'kontak')->name('kontak');
+Route::view('/tujuan', 'tujuan')->name('tujuan');
+Route::view('/struktur-organisasi', 'struktur', ['title' => 'Struktur Organisasi'])->name('struktur');
+
+/**
+ * --------------------------------------------
+ * Routes Berita (Post) Umum
+ * --------------------------------------------
+ */
+Route::get('/berita', function () {
+    return view('informasi', [
+        'title' => 'Blog',
+        'informasi' => Post::filter()->simplePaginate(12),
+    ]);
+})->name('berita');
+
+Route::get('/informasi/{post:slug}', function (Post $post) {
+    return view('post', [
+        'title' => 'Single Post',
+        'post' => $post,
+    ]);
+})->name('informasi.show');
+
+/**
+ * --------------------------------------------
+ * Routes Pelayanan Umum
+ * --------------------------------------------
+ */
+Route::get('/layanan', function () {
+    $pelayanans = DB::table('pelayanans')->get();
+    return view('pelayanan', compact('pelayanans'));
+})->name('layanan.index');
+
+Route::get('/layanan/{id}', function ($id) {
+    $pelayanan = DB::table('pelayanans')->where('id', $id)->first();
+    $details = DB::table('detail_pelayanans')->where('pelayanan_id', $id)->get();
+
+    abort_if(!$pelayanan, 404);
+
+    return view('detail_pelayanan', compact('pelayanan', 'details'));
+})->name('layanan.show');
+
+/**
+ * --------------------------------------------
+ * Routes Admin (Prefix: /admin)
+ * --------------------------------------------
+ */
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::view('/', 'admin.dashboard')->name('dashboard');
+
+    // Admin Galeri (dokumentasi)
+    Route::resource('galleries', GalleryController::class)->names('galleries');
+
+    // Admin Berita
+    Route::resource('posts', PostController::class)->names('posts');
+
+    // Admin Pelayanan
+    Route::resource('pelayanans', PelayananController::class)->names('pelayanans');
 });
-Route::get('/struktur-organisasi', function () {
-    return view('struktur', ['title' => 'Struktur Organisasi']);
-});
-Route::get('/profile', function () {
-    return view('profile');
-});
-Route::get('/login/admin', function () {
-    return view('pagelogin');
-});
-
-Route::get('/daftar', function () {
-    return view('daftar');
-});
-
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth'])->name('dashboard');
-
-// require __DIR__ . '/auth.php';
-
-// Route::get('/tenaga-kesehatan', function () {
-//     return view('layouts.nakes.index');
-// })->name('nakes.index');
-// Route::get('/tenaga-kesehatan/create', function () {
-//     return view('layouts.nakes.create');
-// })->name('nakes.create');
-// Route::get('/tenaga-kesehatan/edit', function () {
-//     return view('layouts.nakes.edit');
-// })->name('nakes.edit');
-
-// Route::get('/pasien', function () {
-//     return view('layouts.pasien.index');
-// })->name('pasien.index');
-// Route::get('/pasien/create', function () {
-//     return view('layouts.pasien.create');
-// })->name('pasien.create');
-// Route::get('/pasien/edit', function () {
-//     return view('layouts.pasien.edit');
-// })->name('pasien.edit');
-
-// Route::get('/petugas', function () {
-//     return view('layouts.petugas.index');
-// })->name('petugas.index');
-// Route::get('/petugas/create', function () {
-//     return view('layouts.petugas.create');
-// })->name('petugas.create');
-// Route::get('/petugas/edit', function () {
-//     return view('layouts.petugas.edit');
-// })->name('petugas.edit');
