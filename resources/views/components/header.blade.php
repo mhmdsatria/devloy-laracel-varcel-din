@@ -9,7 +9,7 @@
         <!-- Teks Tengah -->
         <div class="text-center">
             <h1 class="text-3xl font-bold tracking-tight text-gray-800">
-                Pemerintahan Kabupaten Sukabumi <br>Dinas Kesehatan
+                PEMERINTAHAN KABUPATEN SUKABUMI <br>DINAS KESEHATAN
             </h1>
         </div>
 

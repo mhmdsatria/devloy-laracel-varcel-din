@@ -2,85 +2,76 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Profile;
 use Illuminate\Http\Request;
+use App\Models\Profile;
 
 class ProfileController extends Controller
 {
-    // Menampilkan data
+    // Halaman profil publik
+    public function profile()
+    {
+        $profile = Profile::latest()->first();
+        return view('profil', compact('profile'));
+    }
+
+    // Untuk admin melihat data profile
     public function index()
     {
-        $profiles = Profile::all();
-        return view('profile.index', compact('profiles'));
+        $profile = Profile::latest()->first();
+        return view('admin.profile.index', compact('profile'));
     }
 
-    // Menampilkan form create
     public function create()
-    {
-        return view('profile.create');
+{
+    $profile = \App\Models\Profile::first();
+
+    if ($profile) {
+        return redirect()->route('admin.profile.edit', $profile->id);
     }
 
-    // Menyimpan data
+    return view('admin.profile.create');
+}
+
+
     public function store(Request $request)
     {
         $request->validate([
-            'visi' => 'required',
-            'misi' => 'required',
-            'tujuan' => 'required',
-            'motto' => 'required',
-            'struktur_organisasi' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'nama_puskesmas' => 'required|string|max:255',
+            'email' => 'required|email',
+            'struktur_organisasi' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Upload file
-        $file = $request->file('struktur_organisasi')->store('public/struktur');
+        $data = $request->only(['nama_puskesmas', 'email']);
 
-        Profile::create([
-            'visi' => $request->visi,
-            'misi' => $request->misi,
-            'tujuan' => $request->tujuan,
-            'motto' => $request->motto,
-            'struktur_organisasi' => $file,
-        ]);
-
-        return redirect()->route('profile.index')->with('success', 'Profile berhasil ditambahkan!');
-    }
-
-    // Menampilkan form edit
-    public function edit($id)
-    {
-        $profile = Profile::findOrFail($id);
-        return view('profile.edit', compact('profile'));
-    }
-
-    // Update data
-    public function update(Request $request, $id)
-    {
-        $profile = Profile::findOrFail($id);
-
-        $request->validate([
-            'visi' => 'required',
-            'misi' => 'required',
-            'tujuan' => 'required',
-            'motto' => 'required',
-        ]);
-
-        $data = $request->all();
-        
         if ($request->hasFile('struktur_organisasi')) {
-            $data['struktur_organisasi'] = $request->file('struktur_organisasi')->store('public/struktur');
+            $data['struktur_organisasi'] = $request->file('struktur_organisasi')->store('struktur', 'public');
         }
 
-        $profile->update($data);
+        Profile::create($data);
 
-        return redirect()->route('profile.index')->with('success', 'Profile berhasil diperbarui!');
+        return redirect()->route('admin.profile.index')->with('success', 'Berhasil disimpan!');
+
+    }
+    public function edit(Profile $profile)
+{
+    return view('admin.profile.edit', compact('profile'));
+}
+
+public function update(Request $request, Profile $profile)
+{
+    $validated = $request->validate([
+        'nama_puskesmas' => 'required|string|max:255',
+        'email' => 'required|email',
+        'struktur_organisasi' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    if ($request->hasFile('struktur_organisasi')) {
+        $path = $request->file('struktur_organisasi')->store('struktur', 'public');
+        $validated['struktur_organisasi'] = $path;
     }
 
-    // Hapus data
-    public function destroy($id)
-    {
-        $profile = Profile::findOrFail($id);
-        $profile->delete();
+    $profile->update($validated);
 
-        return redirect()->route('profile.index')->with('success', 'Profile berhasil dihapus!');
-    }
+    return redirect()->route('admin.profile.index')->with('success', 'Profil berhasil diperbarui.');
+}
 }

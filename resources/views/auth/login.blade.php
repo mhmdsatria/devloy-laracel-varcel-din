@@ -4,63 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     @vite('resources/css/app.css')
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <title>Login</title>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="p-10 xs:p-0 mx-auto md:w-full md:max-w-md">
-        <div class="flex items-center justify-center w-full gap-4 mb-4">
-            <img class="w-18 h-18" src="{{ asset('img/Lambang_Kab_Sukabumi.svg') }}" alt="Logo Kiri">
-            <img class="w-18 h-18" src="{{ asset('img/puskesmas-seeklogo-3.svg') }}" alt="Logo Kanan">
-        </div>
-        
-        <h1 class="font-bold text-center text-2xl mb-5">Login</h1>
-        <div class="bg-white shadow w-full rounded-lg divide-y divide-gray-200">
-            <form method="POST" action="{{ route('login') }}" class="px-5 py-7">
+<body>
+    <div class="relative flex flex-col justify-center h-screen overflow-hidden">
+        <div class="w-full p-6 m-auto bg-white rounded-md shadow-md ring-2 ring-gray-800/50 lg:max-w-xl">
+            <h1 class="text-3xl font-semibold text-center text-gray-700">Login</h1>
+            <form action="{{ route('login.action') }}" method="POST" class="space-y-4">
                 @csrf
-                <label class="font-semibold text-sm text-gray-600 pb-1 block">E-mail</label>
-                <input type="email" name="email" class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full"
-                    required />
 
-                <label class="font-semibold text-sm text-gray-600 pb-1 block">Password</label>
-                <input type="password" name="password" class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full"
-                    required />
-
-                <button type="submit"
-                    class="transition duration-200 bg-blue-500 hover:bg-blue-600 focus:bg-blue-700 focus:shadow-sm focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 text-white w-full py-2.5 rounded-lg text-sm shadow-sm hover:shadow-md font-semibold text-center inline-block">
-                    <span class="inline-block mr-2">Login</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        class="w-4 h-4 inline-block">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                </button>
-
+                {{-- Error Handling --}}
                 @if ($errors->any())
-                    <div class="text-red-500 text-sm mt-2">
-                        {{ $errors->first('email') }}
+                    <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
                 @endif
-            </form>
 
-            <div class="py-5">
-                <div class="grid grid-cols-2 gap-1">
-                    <div class="text-center sm:text-left whitespace-nowrap">
-                        <a href="#"
-                            class="transition duration-200 mx-5 px-5 py-4 text-gray-500 hover:bg-gray-100 focus:bg-gray-200 focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset rounded-lg">
-                            <span class="inline-block ml-1">Forgot Password</span>
-                        </a>
-                    </div>
-                    <div class="text-center sm:text-right whitespace-nowrap">
-                        <a href="#"
-                            class="transition duration-200 mx-5 px-5 py-4 text-gray-500 hover:bg-gray-100 focus:bg-gray-200 focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset rounded-lg">
-                            <span class="inline-block ml-1">Help</span>
-                        </a>
-                    </div>
+                {{-- Email --}}
+                <div>
+                    <label class="label">
+                        <span class="text-base label-text">Email</span>
+                    </label>
+                    <input name="email" type="email" placeholder="Email Address" value="{{ old('email') }}"
+                        class="w-full input input-bordered" required />
                 </div>
-            </div>
+
+                {{-- Password --}}
+                <div>
+                    <label class="label">
+                        <span class="text-base label-text">Password</span>
+                    </label>
+                    <input name="password" type="password" placeholder="Enter Password"
+                        class="w-full input input-bordered" required />
+                </div>
+
+                {{-- Remember me --}}
+                <div>
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Remember me</span>
+                        <input name="remember" type="checkbox" class="checkbox checkbox-primary" />
+                    </label>
+                </div>
+
+                {{-- Submit --}}
+                <div>
+                    <button type="submit" class="btn btn-block bg-indigo-600 text-white hover:bg-indigo-700">
+                        Login
+                    </button>
+                </div>
+
+                {{-- Register link --}}
+                <p class="text-center text-sm text-gray-500">
+                    Don't have an account?
+                    <a href="{{ route('register') }}" class="text-blue-600 hover:underline">Register here</a>
+                </p>
+            </form>
         </div>
     </div>
 </body>

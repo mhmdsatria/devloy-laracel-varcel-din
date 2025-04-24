@@ -1,37 +1,23 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-semibold mb-4">Tambah Gambar Baru</h1>
+    <div class="container mx-auto p-5">
+        <h1 class="text-3xl font-bold mb-5">Tambah Galeri</h1>
 
-    <form action="{{ route('gallery.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="mb-4">
-            <label class="block text-gray-700">Judul Gambar</label>
-            <input type="text" name="title" 
-                   class="w-full border border-gray-300 p-2 rounded @error('title') border-red-500 @enderror" required>
-            @error('title')
-                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-            @enderror
-        </div>
+        <form action="{{ route('admin.galleries.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
-        <div class="mb-4">
-            <label class="block text-gray-700">Upload Gambar</label>
-            <input type="file" name="image" 
-                   class="w-full border border-gray-300 p-2 rounded @error('image') border-red-500 @enderror" required>
-            @error('image')
-                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-            @enderror
-        </div>
+            <div class="mb-4">
+                <label for="title" class="block text-sm font-medium text-gray-700">Judul Galeri</label>
+                <input type="text" name="title" id="title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            </div>
 
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Simpan</button>
-    </form>
+            <div class="mb-4">
+                <label for="image" class="block text-sm font-medium text-gray-700">Gambar Galeri</label>
+                <input type="file" name="image" id="image" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            </div>
 
-    <!-- Display success message after upload (if any) -->
-    @if(session('success'))
-        <div class="mt-4 bg-green-500 text-white p-2 rounded">
-            {{ session('success') }}
-        </div>
-    @endif
-</div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">Simpan Galeri</button>
+        </form>
+    </div>
 @endsection

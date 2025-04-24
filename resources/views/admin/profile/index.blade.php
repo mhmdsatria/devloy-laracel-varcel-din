@@ -1,44 +1,44 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1 class="my-4">Daftar Berita</h1>
+<div class="container mx-auto p-5">
+    <h2 class="text-2xl font-bold mb-6">Profil Puskesmas</h2>
 
-        <!-- Tombol Tambah Berita -->
-        <a href="{{ route('admin.posts.create') }}" class="btn btn-primary mb-3">Tambah Berita</a>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Judul</th>
-                    <th>Penulis</th>
-                    <th>Tanggal</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
+    @if ($profile)
+        <table class="table-auto w-full border border-gray-300">
             <tbody>
-                @foreach($posts as $post)
-                    <tr>
-                        <td>{{ $post->title }}</td>
-                        <td>{{ $post->author }}</td>
-                        <td>{{ $post->created_at->format('d M Y') }}</td>
-                        <td>
-                            <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-warning">Edit</a>
-                            <form action="{{ route('admin.posts.destroy', $post) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
+                <tr class="border-b">
+                    <td class="px-4 py-2 font-semibold w-1/3">Nama</td>
+                    <td class="px-4 py-2">{{ $profile->nama_puskesmas }}</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="px-4 py-2 font-semibold">Email</td>
+                    <td class="px-4 py-2">{{ $profile->email }}</td>
+                </tr>
+                @if ($profile->struktur_organisasi)
+                <tr>
+                    <td class="px-4 py-2 font-semibold">Struktur Organisasi</td>
+                    <td class="px-4 py-2">
+                        <img src="{{ asset('storage/' . $profile->struktur_organisasi) }}"
+                             alt="Struktur Organisasi" class="w-32 h-auto">
+                    </td>
+                </tr>
+                @endif
             </tbody>
         </table>
 
-        {{ $posts->links() }}
-    </div>
+        <div class="mt-6">
+            <a href="{{ route('admin.profile.edit', $profile->id) }}"
+               class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded">
+               Edit Profil
+            </a>
+        </div>
+    @else
+        <p class="text-gray-600 mb-4">Belum ada data profil puskesmas.</p>
+        <a href="{{ route('admin.profile.create') }}"
+           class="inline-block bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded">
+           Tambahkan Profil
+        </a>
+    @endif
+</div>
 @endsection

@@ -8,60 +8,96 @@ use Illuminate\Support\Facades\Storage;
 
 class GalleryController extends Controller
 {
-    // Menampilkan daftar galeri dengan pagination
+    // Menampilkan daftar galeri untuk admin
     public function index()
     {
-        $galleries = Gallery::paginate(10); // Paginate the galleries
-        return view('gallery.index', compact('galleries'));
+        $galleries = Gallery::paginate(10);
+        return view('admin.gallery.index', compact('galleries'));
     }
 
-    // Form untuk menambah galeri
+    // Form tambah galeri
     public function create()
     {
-        return view('gallery.create');
+        return view('admin.gallery.create');
     }
 
-    // Menyimpan gambar baru ke galeri
+    // Simpan galeri baru
     public function store(Request $request)
     {
-        // Validasi input gambar
         $validated = $request->validate([
-            'title' => 'required|string|max:255',  // Validasi title
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',  // Validasi file image
+            'title' => 'required|string|max:255',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // Menangani upload file gambar
-        if ($request->hasFile('image')) {
-            // Menyimpan gambar ke storage
-            $imagePath = $request->file('image')->store('galleries', 'public');
-        } else {
-            // Jika tidak ada gambar, tampilkan pesan error
-            return redirect()->back()->withErrors(['image' => 'Gambar diperlukan!']);
-        }
+        $imagePath = $request->file('image')->store('galleries', 'public');
 
-        // Menyimpan informasi ke tabel gallery
         Gallery::create([
             'title' => $validated['title'],
             'image_path' => $imagePath,
         ]);
 
-        return redirect()->route('gallery.index')->with('success', 'Gambar berhasil ditambahkan!');
+        return redirect()->route('admin.galleries.index')->with('success', 'Gambar berhasil ditambahkan!');
     }
 
-    // Menghapus gambar dari galeri
-    public function destroy($id)
+    // Tampilkan form edit galeri
+    public function edit($id)
     {
-        // Mencari data galeri berdasarkan ID
+        $gallery = Gallery::findOrFail($id);
+        return view('admin.gallery.edit', compact('gallery'));
+    }
+
+    // Update galeri
+    public function update(Request $request, $id)
+    {
         $gallery = Gallery::findOrFail($id);
 
-        // Menghapus gambar dari storage jika ada
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        // Update judul
+        $gallery->title = $validated['title'];
+
+        // Ganti gambar jika ada
+        if ($request->hasFile('image')) {
+            if (Storage::disk('public')->exists($gallery->image_path)) {
+                Storage::disk('public')->delete($gallery->image_path);
+            }
+            $gallery->image_path = $request->file('image')->store('galleries', 'public');
+        }
+
+        $gallery->save();
+
+        return redirect()->route('admin.galleries.index')->with('success', 'Galeri berhasil diperbarui!');
+    }
+
+    // Hapus galeri
+    public function destroy($id)
+    {
+        $gallery = Gallery::findOrFail($id);
+
         if (Storage::disk('public')->exists($gallery->image_path)) {
             Storage::disk('public')->delete($gallery->image_path);
         }
 
-        // Menghapus data galeri dari database
         $gallery->delete();
 
-        return redirect()->route('gallery.index')->with('success', 'Gambar berhasil dihapus!');
+        return redirect()->route('admin.galleries.index')->with('success', 'Gambar berhasil dihapus!');
     }
+
+    public function show(Gallery $gallery)
+{
+    // Menampilkan detail galeri
+    return view('gallery.show', compact('gallery'));
+}
+
+
+    // Menampilkan dokumentasi ke UI publik
+public function dokumentasi()
+{
+    $galleries = Gallery::latest()->paginate(9); // Bisa disesuaikan jumlahnya
+    return view('dokumentasi', compact('galleries'));
+}
+
 }

@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Gallery; // Import model Gallery
+use App\Models\SocialLink;
+use App\Models\Profile;
+use App\Models\Carousel;
 
 class BerandaController extends Controller
 {
+   
+
     public function index()
     {
-        // Mengambil semua data dari tabel galleries
+        $carouselImages = \App\Models\Carousel::latest()->take(4)->get();
         $galleries = Gallery::all();
+        $socialLinks = SocialLink::all()->keyBy('platform');
+        $profile = Profile::latest()->first();
 
-        // Mengirim data ke view 'beranda'
-        return view('beranda', compact('galleries'));
+        return view('beranda', compact('galleries', 'socialLinks', 'profile','carouselImages'));
     }
+    
 }

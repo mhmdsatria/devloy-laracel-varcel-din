@@ -4,29 +4,41 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pelayanan;
 use Illuminate\Http\Request;
-
+use App\Models\Profile;
 class ProfileController extends Controller
 {
+     // pastikan model Profile di-import
+
     public function index() {
-        $pelayanans = Pelayanan::all();
-        return view('admin.pelayanan.index', compact('pelayanans'));
+        $profile = Profile::latest()->first(); // ambil data terbaru
+    
+        return view('admin.profile.index', compact('profile'));
     }
+    
 
-    public function create() {
-        return view('admin.pelayanan.create');
-    }
+public function create()
+{
+    return view('admin.profile.create');
+}
 
-    public function store(Request $request) {
-        $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'days' => 'required'
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'nama_puskesmas' => 'required',
+            'email' => 'required|email',
+            'struktur_organisasi' => 'nullable|image|mimes:jpg,jpeg,png'
         ]);
-
-        Pelayanan::create($request->all());
-        return redirect()->route('pelayanan.index')->with('success', 'Pelayanan berhasil ditambahkan!');
+    
+        if ($request->hasFile('struktur_organisasi')) {
+            $data['struktur_organisasi'] = $request->file('struktur_organisasi')->store('struktur', 'public');
+        }
+    
+        \App\Models\Profile::create($data);
+    
+        return redirect()->route('admin.profile.index')->with('success', 'Profil berhasil ditambahkan!');
     }
-
+    
     public function edit(Pelayanan $pelayanan) {
         return view('admin.pelayanan.edit', compact('pelayanan'));
     }

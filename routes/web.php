@@ -6,26 +6,46 @@ use App\Http\Controllers\{
     GalleryController,
     ProfileController,
     StatisticController,
-    BerandaController
+    BerandaController,
+    AuthController
 };
 use App\Http\Controllers\Admin\{
     PostController,
-    PelayananController
+    PelayananController,
+    SocialMediaController,
+    CarouselController
 };
 
-/**
- * --------------------------------------------
- * Routes Utama (Public)
- * --------------------------------------------
- */
+// --------------------------------------------
+// Auth Routes
+// --------------------------------------------
+Route::controller(AuthController::class)->group(function () {
+    Route::get('register', 'register')->name('register');
+    Route::post('register', 'registerSave')->name('register.save');
+    Route::get('login', 'login')->name('login');
+    Route::post('login', 'loginAction')->name('login.action');
+    Route::get('logout', 'logout')->middleware('auth')->name('logout');
+});
+
+// --------------------------------------------
+// Dashboard & User Profile (auth only)
+// --------------------------------------------
+Route::middleware('auth')->group(function () {
+    Route::get('dashboard', fn() => view('dashboard'))->name('dashboard');
+    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+});
+
+// --------------------------------------------
+// Public - Beranda
+// --------------------------------------------
 Route::get('/', function () {
-    $galleries = Gallery::all(); 
+    $galleries = Gallery::all();
     $latestPosts = Post::latest()->take(6)->get();
     $pelayanans = Pelayanan::take(6)->get();
 
     $stat = Statistic::firstOrCreate([], [
         'total_views' => 0,
-        'active_services' => 22
+        'active_services' => 22,
     ]);
     $stat->increment('total_views');
 
@@ -35,29 +55,15 @@ Route::get('/', function () {
         'beranda' => $latestPosts,
         'pelayanans' => $pelayanans,
         'stat' => $stat,
+        'carouselImages' => Gallery::latest()->take(4)->get(), // tambahkan ini agar tidak error
     ]);
 })->name('beranda');
 
 Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda.index');
-Route::get('/dokumentasi', [GalleryController::class, 'dokumentasi'])->name('dokumentasi');
-Route::resource('gallery', GalleryController::class); // Public akses galeri
 
-/**
- * --------------------------------------------
- * Routes Halaman Statis
- * --------------------------------------------
- */
-Route::view('/profile', 'profile')->name('profile');
-Route::view('/visi-misi', 'visiMisi')->name('visiMisi');
-Route::view('/kontak', 'kontak')->name('kontak');
-Route::view('/tujuan', 'tujuan')->name('tujuan');
-Route::view('/struktur-organisasi', 'struktur', ['title' => 'Struktur Organisasi'])->name('struktur');
-
-/**
- * --------------------------------------------
- * Routes Berita (Post) Umum
- * --------------------------------------------
- */
+// --------------------------------------------
+// Informasi & Berita
+// --------------------------------------------
 Route::get('/berita', function () {
     return view('informasi', [
         'title' => 'Blog',
@@ -72,39 +78,55 @@ Route::get('/informasi/{post:slug}', function (Post $post) {
     ]);
 })->name('informasi.show');
 
-/**
- * --------------------------------------------
- * Routes Pelayanan Umum
- * --------------------------------------------
- */
-Route::get('/layanan', function () {
-    $pelayanans = DB::table('pelayanans')->get();
-    return view('pelayanan', compact('pelayanans'));
-})->name('layanan.index');
+// --------------------------------------------
+// Pelayanan
+// --------------------------------------------
+Route::get('/layanan', fn() => view('pelayanan', [
+    'pelayanans' => Pelayanan::all()
+]))->name('layanan.index');
 
 Route::get('/layanan/{id}', function ($id) {
-    $pelayanan = DB::table('pelayanans')->where('id', $id)->first();
-    $details = DB::table('detail_pelayanans')->where('pelayanan_id', $id)->get();
-
+    $pelayanan = Pelayanan::find($id);
     abort_if(!$pelayanan, 404);
 
+    $details = DB::table('detail_pelayanans')->where('pelayanan_id', $id)->get();
     return view('detail_pelayanan', compact('pelayanan', 'details'));
 })->name('layanan.show');
 
-/**
- * --------------------------------------------
- * Routes Admin (Prefix: /admin)
- * --------------------------------------------
- */
-Route::prefix('admin')->name('admin.')->group(function () {
+// --------------------------------------------
+// Halaman Statis
+// --------------------------------------------
+Route::get('/profil', [ProfileController::class, 'profile'])->name('profil');
+Route::view('/struktur-organisasi', 'struktur', ['title' => 'Struktur Organisasi'])->name('struktur');
+
+// --------------------------------------------
+// Galeri (Publik)
+// --------------------------------------------
+Route::get('/dokumentasi', [GalleryController::class, 'dokumentasi'])->name('dokumentasi');
+Route::resource('gallery', GalleryController::class)->only(['index', 'show'])->names('gallery');
+
+// --------------------------------------------
+// Admin Routes
+// --------------------------------------------
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');
 
-    // Admin Galeri (dokumentasi)
     Route::resource('galleries', GalleryController::class)->names('galleries');
-
-    // Admin Berita
     Route::resource('posts', PostController::class)->names('posts');
-
-    // Admin Pelayanan
     Route::resource('pelayanans', PelayananController::class)->names('pelayanans');
+
+    Route::resource('profile', ProfileController::class)->only([
+        'index', 'create', 'store', 'edit', 'update'
+    ])->names('profile');
+
+    // Admin Sosial Media
+    Route::get('sosmed', [SocialMediaController::class, 'index'])->name('sosmed.index');
+    Route::get('sosmed/create/{platform}', [SocialMediaController::class, 'create'])->name('sosmed.create');
+    Route::post('sosmed/store', [SocialMediaController::class, 'store'])->name('sosmed.store');
+    Route::get('sosmed/{platform}/edit', [SocialMediaController::class, 'edit'])->name('sosmed.edit');
+    Route::put('sosmed/update', [SocialMediaController::class, 'update'])->name('sosmed.update');
+    Route::delete('sosmed/{platform}', [SocialMediaController::class, 'destroy'])->name('sosmed.destroy');
+
+    // Admin Carousel
+    Route::resource('carousel', CarouselController::class)->names('carousel');
 });
