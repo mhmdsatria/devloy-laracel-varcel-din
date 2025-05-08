@@ -51,7 +51,7 @@
                 <x-nav-link href="/" :active="request()->is('beranda')">Beranda</x-nav-link>
                 <x-nav-link href="/profil" :active="request()->is('profil')">Profil</x-nav-link>
                 <x-nav-link href="/layanan" :active="request()->is('layanan')">Layanan</x-nav-link>
-                <x-nav-link href="{{ route('gallery.index') }}" :active="request()->is('gallery*')">Dokumentasi</x-nav-link>
+                <x-nav-link href="/dokumentasi" :active="request()->is('dokumentasi')">Dokumentasi</x-nav-link>                
                 <x-nav-link href="/berita" :active="request()->is('berita')">Berita</x-nav-link>
             </div>
         </div>

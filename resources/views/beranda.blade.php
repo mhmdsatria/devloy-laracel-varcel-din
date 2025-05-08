@@ -63,36 +63,50 @@
 
 <body>
     <x-header></x-header>
-    <x-navbar >puskesmas</x-navbar>
-    
-    <div x-data="{ 
-        activeIndex: 0, 
-        slides: {{ $carouselImages->count() }},
-        images: @json($carouselImages->map(fn($img) => ['image_url' => asset('storage/' . $img->image)]))
-    }"
-    x-init="setInterval(() => activeIndex = (activeIndex + 1) % slides, 4000)"
-    class="relative w-full"
->
-    <!-- Carousel wrapper -->
-    <div class="relative h-56 overflow-hidden rounded-lg md:h-120">
-        <!-- Overlay Gradasi -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-
+    <x-navbar>puskesmas</x-navbar>
+    <div x-data="{ active: 0 }" x-init="setInterval(() => active = (active + 1) % {{ count($carousels) }}, 10000)" class="relative w-full overflow-hidden shadow-lg">
         <!-- Slides -->
-        <template x-for="(image, index) in images" :key="index">
-            <div class="absolute w-full h-full transition-all duration-1000 ease-in-out"
-                x-bind:class="{
-                    'opacity-100 z-20': activeIndex === index,
-                    'opacity-0 z-10': activeIndex !== index
-                }">
-                <img :src="image.image_url"
-                     class="block w-full h-full object-cover"
-                     :alt="`Slide ${index + 1}`">
-            </div>
-        </template>
+        <div class="relative w-full h-120 object-cover">
+            @foreach ($carousels as $index => $carousel)
+                <div class="absolute inset-0 transition-opacity duration-700" 
+                    x-show="active === {{ $index }}" 
+                    x-transition:enter="transition-opacity ease-in-out duration-2000" 
+                    x-transition:enter-start="opacity-0" 
+                    x-transition:enter-end="opacity-100" 
+                    x-transition:leave="transition-opacity ease-in-out duration-2000" 
+                    x-transition:leave-start="opacity-100" 
+                    x-transition:leave-end="opacity-0">
+                    <img src="{{ asset('storage/' . $carousel->image) }}" alt="Carousel {{ $index + 1 }}" class="object-cover w-full h-120">
+                </div>
+            @endforeach
+        </div>
+    
+        <!-- Tombol Navigasi -->
+        <div class="absolute inset-0 flex items-center justify-between px-4">
+            <button @click="active = active === 0 ? {{ count($carousels) }} - 1 : active - 1" class="bg-black/50 hover:bg-black/70 text-white rounded-full p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button @click="active = (active + 1) % {{ count($carousels) }}" class="bg-black/50 hover:bg-black/70 text-white rounded-full p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    
+        <!-- Indikator Bawah -->
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            @foreach ($carousels as $index => $carousel)
+                <button @click="active = {{ $index }}" 
+                    :class="{'bg-white': active === {{ $index }}, 'bg-white/50': active !== {{ $index }}}" 
+                    class="w-3 h-3 rounded-full"></button>
+            @endforeach
+        </div>
+    
     </div>
-</div>
-
+    
+      
     <div class="bg-gray-100">
         <x-layout>
             <div class="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16">
@@ -105,26 +119,26 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach ($pelayanans as $pelayanan)
-                        <article class="bg-white shadow-lg rounded-lg overflow-hidden">
-                            @if ($pelayanan->image)
-                                <img class="w-full h-48 object-cover" src="{{ asset('storage/' . $pelayanan->image) }}"
-                                    alt="{{ $pelayanan->title }}">
-                            @endif
-                            <div class="p-5">
-                                <h2 class="text-xl font-semibold">{{ $pelayanan->title }}</h2>
-                                <p class="text-gray-600 mt-2">
-                                    {{ function_exists('mb_strimwidth')
-                                        ? \Illuminate\Support\Str::limit($pelayanan->description, 100, '...')
-                                        : \Illuminate\Support\Str::substr($pelayanan->description, 0, 100) . '...' }}
-                                </p>
-                                <a href="{{ url('/layanan/' . $pelayanan->id) }}"
-                                    class="inline-block mt-4 text-blue-600 hover:underline">
-                                    Lihat Detail
-                                </a>
-                            </div>
-                        </article>
+                        <a href="{{ url('/layanan/' . $pelayanan->id) }}" class="block">
+                            <article class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition">
+                                @if ($pelayanan->image)
+                                    <img class="w-full h-48 object-cover" src="{{ asset('storage/' . $pelayanan->image) }}"
+                                        alt="{{ $pelayanan->title }}">
+                                @endif
+                                <div class="p-5">
+                                    <h2 class="text-xl font-semibold text-gray-800">{{ $pelayanan->title }}</h2>
+                                    <p class="text-gray-600 mt-2">
+                                        {{ \Illuminate\Support\Str::words(strip_tags($pelayanan->description), 15, '...') }}
+                                    </p>
+                                    <span class="inline-block mt-4 text-blue-600 hover:underline">
+                                        Lihat Detail
+                                    </span>
+                                </div>
+                            </article>
+                        </a>
                     @endforeach
                 </div>
+                
 
                 <div class="text-center mt-8">
                     <a href="/layanan"
@@ -171,24 +185,25 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach ($beranda as $post)
-                        <article class="bg-white shadow-lg rounded-lg overflow-hidden">
-                            <img class="w-full h-48 object-cover" src="{{ asset('storage/' . $post->image) }}"
-                                alt="{{ $post->title }}">
-                            <div class="p-5">
-                                <h2 class="text-xl font-semibold">{{ $post->title }}</h2>
-                                <p class="font-base text-gray-500">{{ $post->author }} |
-                                    {{ $post->created_at->format('d M Y') }}</p>
-                                <p class="text-gray-600 mt-2">
-                                    {{ \Illuminate\Support\Str::limit($post->content, 100, '...') }}</p>
-                                <p class="text-gray-600 mt-2">{{ Str::words($post['body'], 15, '...') }}</p>
-                                <a href="/informasi/{{ $post->slug }}"
-                                    class="inline-block mt-4 text-blue-600 hover:underline">
-                                    Baca Selengkapnya
-                                </a>
-                            </div>
-                        </article>
+                        <a href="/informasi/{{ $post->slug }}" class="block group">
+                            <article class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition duration-300">
+                                <img class="w-full h-48 object-cover" src="{{ asset('storage/' . $post->image) }}"
+                                    alt="{{ $post->title }}">
+                                <div class="p-5">
+                                    <h2 class="text-xl font-semibold text-gray-800 group-hover:text-blue-600">{{ $post->title }}</h2>
+                                    <p class="font-base text-gray-500">{{ $post->author }} |
+                                        {{ $post->created_at->format('d M Y') }}</p>
+                                    <p class="text-gray-600 mt-2">
+                                        {{ \Illuminate\Support\Str::words(strip_tags($post->body), 15, '...') }}
+                                    </p>
+                                    <span class="inline-block mt-4 text-blue-600 group-hover:underline">
+                                        Baca Selengkapnya
+                                    </span>
+                                </div>
+                            </article>
+                        </a>
                     @endforeach
-                </div>
+                </div>                
                 <div class="text-center mt-8">
                     <a href="/berita" :active="request() - > is('berita')"
                         class="inline-block px-6 py-3 mt-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg transition duration-300 ease-in-out">
@@ -328,7 +343,7 @@
         </script>
     </x-layout>
 
-    <x-footer></x-footer>
+    <x-footer :stat="$stat" />
 </body>
 
 </html>

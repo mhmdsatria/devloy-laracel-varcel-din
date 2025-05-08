@@ -25,13 +25,32 @@
 <body>
     <x-header></x-header>
     <x-navbar>Puskesmas</x-navbar>
-
+    <div class="bg-[#03954A] place-items-center text-white">
+        <div class="bg-[#03954A] p-12 text-white">
+            <div class="text-center my-8">
+                <h2 class="text-4xl font-bold">DOKUMENTASI</h2>
+                <nav class="text-sm text-gray-200 mt-4" aria-label="Breadcrumb">
+                    <ol class="list-none p-0 inline-flex justify-center items-center space-x-1 sm:space-x-2">
+                        <li class="inline-flex items-center">
+                            <a href="/" class="hover:underline hover:text-white">Home</a>
+                            <span class="mx-2 text-gray-300">›</span>
+                        </li>
+                        <li class="inline-flex items-center">
+                            <a href="/dokumentasi" class="hover:underline hover:text-white">Dokumentasi</a>
+                        </li>
+                        <li class="inline-flex items-center text-white font-medium">
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
     <!-- Header Judul -->
-    <div class="bg-[#03954A] p-18 place-items-center text-white">
+    {{--  <div class="bg-[#03954A] p-18 place-items-center text-white">
         <div class="text-center my-8">
             <h2 class="text-4xl font-bold">DOKUMENTASI</h2>
         </div>
-    </div>
+    </div>  --}}
 
     <!-- Konten Galeri -->
     <x-layout>
@@ -89,12 +108,11 @@
 
                 <!-- Modal Lightbox -->
                 <div x-show="open"
-                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50"
-                x-transition
-                @keydown.escape.window="open = false"
-                @click.self="open = false">
+                     class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-md z-50"
+                     x-transition
+                     @keydown.escape.window="open = false"
+                     @click.self="open = false">
 
-                    
                     <div class="relative max-w-3xl w-full px-4 text-center">
 
                         <!-- Gambar -->
@@ -127,7 +145,7 @@
         </div>
     </x-layout>
 
-    <x-footer></x-footer>
+    <x-footer :stat="$stat" />
 
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>

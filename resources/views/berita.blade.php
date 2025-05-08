@@ -10,6 +10,7 @@
 </head>
 
 <body class="h-full">
+    
     <!-- Header dan Navbar -->
     <x-header></x-header>
     <x-navbar>puskesmas</x-navbar>

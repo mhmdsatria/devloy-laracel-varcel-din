@@ -22,32 +22,35 @@ class PostController extends Controller
     }
 
     public function store(Request $request)
-    {
-        // Validasi inputan
-        $validated = $request->validate([
-            'title' => 'required',
-            'slug' => 'required|unique:posts,slug',
-            'author' => 'required',
-            'body' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+{
+    // Validasi inputan
+    $validated = $request->validate([
+        'title' => 'required',
+        'author' => 'required',
+        'body' => 'required',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    // Tambahkan slug otomatis
+    $validated['slug'] = Str::slug($validated['title']);
+
+    // Proses penyimpanan gambar
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('images', 'public');
+
+        // Tambahkan juga ke gallery
+        Gallery::create([
+            'title' => $validated['title'],
+            'image_path' => $validated['image'],
         ]);
-
-        // Proses penyimpanan gambar
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('images', 'public'); // Menyimpan gambar di public/images
-
-            // Menambahkan gambar ke dalam gallery
-            Gallery::create([
-                'title' => $validated['title'],  // Sama dengan title post
-                'image_path' => $validated['image'], // Gambar yang di-upload
-            ]);
-        }
-
-        // Menyimpan data post baru
-        Post::create($validated);
-
-        return redirect()->route('admin.posts.index')->with('success', 'Berita berhasil ditambahkan.');
     }
+
+    // Simpan data post baru
+    Post::create($validated);
+
+    return redirect()->route('admin.posts.index')->with('success', 'Berita berhasil ditambahkan.');
+}
+
 
     public function edit(Post $post)
     {
@@ -55,37 +58,33 @@ class PostController extends Controller
     }
 
     public function update(Request $request, Post $post)
-    {
-        // Validasi inputan
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'body' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+{
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'author' => 'required|string|max:255',
+        'body' => 'required|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    // Update slug otomatis dari title
+    $validated['slug'] = Str::slug($validated['title']);
+
+    // Kalau ada gambar baru
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('images', 'public');
+
+        // Simpan juga ke galeri
+        Gallery::create([
+            'title' => $validated['title'],
+            'image_path' => $validated['image'],
         ]);
-
-        // Update data post
-        $post->title = $request->title;
-        $post->slug = Str::slug($request->title);
-        $post->author = $request->author;
-        $post->body = $request->body;
-
-        // Jika ada gambar baru
-        if ($request->hasFile('image')) {
-            // Menghapus gambar lama jika ada
-            if ($post->image && file_exists(storage_path('app/public/' . $post->image))) {
-                unlink(storage_path('app/public/' . $post->image));
-            }
-
-            // Menyimpan gambar baru
-            $post->image = $request->file('image')->store('images', 'public');
-        }
-
-        // Simpan perubahan post
-        $post->save();
-
-        return redirect()->route('admin.posts.index')->with('success', 'Post berhasil diperbarui!');
     }
+
+    $post->update($validated);
+
+    return redirect()->route('admin.posts.index')->with('success', 'Berita berhasil diperbarui.');
+}
+
 
     public function destroy(Post $post)
     {

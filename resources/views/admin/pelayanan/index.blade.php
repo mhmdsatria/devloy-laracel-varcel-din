@@ -21,12 +21,12 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-700">
-                    @foreach ($pelayanans as $key => $data)
+                    @forelse ($pelayanans as $key => $data)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-2 border">{{ $key + 1 }}</td>
                             <td class="px-4 py-2 border">{{ $data->title }}</td>
                             <td class="px-4 py-2 border">
-                                {{ \Illuminate\Support\Str::limit($data->description, 60) }}
+                                {{ strlen(strip_tags($data->description)) > 60 ? substr(strip_tags($data->description), 0, 60) . '...' : strip_tags($data->description) }}
                             </td>
                             <td class="px-4 py-2 border text-center">
                                 <div class="flex justify-center gap-2">
@@ -47,15 +47,13 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
-
-                    @if ($pelayanans->isEmpty())
+                    @empty
                         <tr>
                             <td colspan="4" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada layanan yang ditambahkan.
                             </td>
                         </tr>
-                    @endif
+                    @endforelse
                 </tbody>
             </table>
         </div>

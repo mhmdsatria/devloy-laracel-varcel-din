@@ -12,11 +12,30 @@
 <body>
     <x-header />
     <x-navbar />
-
-    <!-- Hero Section -->
-    <div class="bg-[#03954A] p-16 text-white text-center">
-        <h2 class="text-4xl font-bold">PROFIL KAMI</h2>
+    <div class="bg-[#03954A] place-items-center text-white">
+        <div class="bg-[#03954A] p-12 text-white">
+            <div class="text-center my-8">
+                <h2 class="text-4xl font-bold">PROFIL KAMI</h2>
+                <nav class="text-sm text-gray-200 mt-4" aria-label="Breadcrumb">
+                    <ol class="list-none p-0 inline-flex justify-center items-center space-x-1 sm:space-x-2">
+                        <li class="inline-flex items-center">
+                            <a href="/" class="hover:underline hover:text-white">Home</a>
+                            <span class="mx-2 text-gray-300">›</span>
+                        </li>
+                        <li class="inline-flex items-center">
+                            <a href="/profil" class="hover:underline hover:text-white">Profil</a>
+                        </li>
+                        <li class="inline-flex items-center text-white font-medium">
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
     </div>
+    <!-- Hero Section -->
+    {{--  <div class="bg-[#03954A] p-16 text-white text-center">
+        <h2 class="text-4xl font-bold">PROFIL KAMI</h2>
+    </div>  --}}
 
     <!-- Visi & Misi -->
     <x-layout>

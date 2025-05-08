@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\{DB, Route};
-use App\Models\{Gallery, Post, Profile, Pelayanan, Statistic};
+use App\Models\{Gallery, Post, Profile, Pelayanan, Statistic, Carousel};
 use App\Http\Controllers\{
     GalleryController,
     ProfileController,
@@ -28,7 +28,7 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 // --------------------------------------------
-// Dashboard & User Profile (auth only)
+// Dashboard & User Routes (auth only)
 // --------------------------------------------
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', fn() => view('dashboard'))->name('dashboard');
@@ -36,12 +36,13 @@ Route::middleware('auth')->group(function () {
 });
 
 // --------------------------------------------
-// Public - Beranda
+// Public Routes - Beranda, Info, Galeri, etc
 // --------------------------------------------
 Route::get('/', function () {
     $galleries = Gallery::all();
     $latestPosts = Post::latest()->take(6)->get();
     $pelayanans = Pelayanan::take(6)->get();
+    $carousels = Carousel::take(3)->get();
 
     $stat = Statistic::firstOrCreate([], [
         'total_views' => 0,
@@ -55,14 +56,23 @@ Route::get('/', function () {
         'beranda' => $latestPosts,
         'pelayanans' => $pelayanans,
         'stat' => $stat,
-        'carouselImages' => Gallery::latest()->take(4)->get(), // tambahkan ini agar tidak error
+        'carousels' => $carousels,
     ]);
 })->name('beranda');
 
 Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda.index');
+Route::get('/dokumentasi', [GalleryController::class, 'dokumentasi'])->name('dokumentasi');
+Route::resource('gallery', GalleryController::class)->only(['index', 'show']);
 
 // --------------------------------------------
-// Informasi & Berita
+// Halaman Statis & Profil Publik
+// --------------------------------------------
+Route::get('/user-profile', [AuthController::class, 'profile'])->name('user.profile');
+Route::get('/profil', [ProfileController::class, 'profile'])->name('profil');
+Route::view('/struktur-organisasi', 'struktur', ['title' => 'Struktur Organisasi'])->name('struktur');
+
+// --------------------------------------------
+// Berita
 // --------------------------------------------
 Route::get('/berita', function () {
     return view('informasi', [
@@ -81,29 +91,19 @@ Route::get('/informasi/{post:slug}', function (Post $post) {
 // --------------------------------------------
 // Pelayanan
 // --------------------------------------------
-Route::get('/layanan', fn() => view('pelayanan', [
-    'pelayanans' => Pelayanan::all()
-]))->name('layanan.index');
+Route::get('/layanan', function () {
+    $pelayanans = Pelayanan::all();
+    return view('pelayanan', compact('pelayanans'));
+})->name('layanan.index');
 
 Route::get('/layanan/{id}', function ($id) {
     $pelayanan = Pelayanan::find($id);
+    $details = DB::table('detail_pelayanans')->where('pelayanan_id', $id)->get();
+
     abort_if(!$pelayanan, 404);
 
-    $details = DB::table('detail_pelayanans')->where('pelayanan_id', $id)->get();
     return view('detail_pelayanan', compact('pelayanan', 'details'));
 })->name('layanan.show');
-
-// --------------------------------------------
-// Halaman Statis
-// --------------------------------------------
-Route::get('/profil', [ProfileController::class, 'profile'])->name('profil');
-Route::view('/struktur-organisasi', 'struktur', ['title' => 'Struktur Organisasi'])->name('struktur');
-
-// --------------------------------------------
-// Galeri (Publik)
-// --------------------------------------------
-Route::get('/dokumentasi', [GalleryController::class, 'dokumentasi'])->name('dokumentasi');
-Route::resource('gallery', GalleryController::class)->only(['index', 'show'])->names('gallery');
 
 // --------------------------------------------
 // Admin Routes
@@ -111,22 +111,36 @@ Route::resource('gallery', GalleryController::class)->only(['index', 'show'])->n
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');
 
+    // Admin Carousels
+    Route::resource('carousels', CarouselController::class);
+
+    // Admin Galeri
     Route::resource('galleries', GalleryController::class)->names('galleries');
+
+    // Admin Berita
     Route::resource('posts', PostController::class)->names('posts');
+
+    // Admin Pelayanan
     Route::resource('pelayanans', PelayananController::class)->names('pelayanans');
 
-    Route::resource('profile', ProfileController::class)->only([
+    // Admin Profile
+    Route::resource('profile', ProfileController::class)->names('profile')->only([
         'index', 'create', 'store', 'edit', 'update'
-    ])->names('profile');
+    ]);
 
     // Admin Sosial Media
-    Route::get('sosmed', [SocialMediaController::class, 'index'])->name('sosmed.index');
-    Route::get('sosmed/create/{platform}', [SocialMediaController::class, 'create'])->name('sosmed.create');
-    Route::post('sosmed/store', [SocialMediaController::class, 'store'])->name('sosmed.store');
-    Route::get('sosmed/{platform}/edit', [SocialMediaController::class, 'edit'])->name('sosmed.edit');
-    Route::put('sosmed/update', [SocialMediaController::class, 'update'])->name('sosmed.update');
-    Route::delete('sosmed/{platform}', [SocialMediaController::class, 'destroy'])->name('sosmed.destroy');
-
-    // Admin Carousel
-    Route::resource('carousel', CarouselController::class)->names('carousel');
+    Route::prefix('sosmed')->name('sosmed.')->group(function () {
+        Route::get('/', [SocialMediaController::class, 'index'])->name('index');
+        Route::get('create/{platform}', [SocialMediaController::class, 'create'])->name('create');
+        Route::post('store', [SocialMediaController::class, 'store'])->name('store');
+        Route::get('{platform}/edit', [SocialMediaController::class, 'edit'])->name('edit');
+        Route::put('update', [SocialMediaController::class, 'update'])->name('update');
+        Route::delete('{platform}', [SocialMediaController::class, 'destroy'])->name('destroy');
+    });
 });
+
+// --------------------------------------------
+// Dokumentasi Galeri untuk Publik (Duplicate check!)
+// --------------------------------------------
+Route::get('/gallery', [GalleryController::class, 'dokumentasi'])->name('gallery.index');
+Route::get('/gallery/{gallery}', [GalleryController::class, 'show'])->name('gallery.show');

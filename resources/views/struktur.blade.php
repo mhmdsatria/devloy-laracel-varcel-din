@@ -16,7 +16,7 @@
     <x-layout>
 
     </x-layout>
-    <x-footer></x-footer>
+    <x-footer :stat="$stat" />
 </body>
 
 </html>

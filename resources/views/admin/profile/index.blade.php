@@ -5,18 +5,18 @@
     <h2 class="text-2xl font-bold mb-6">Profil Puskesmas</h2>
 
     @if ($profile)
-        <table class="table-auto w-full border border-gray-300">
+        <table class="table-lg w-full border border-gray-300">
             <tbody>
                 <tr class="border-b">
                     <td class="px-4 py-2 font-semibold w-1/3">Nama</td>
-                    <td class="px-4 py-2">{{ $profile->nama_puskesmas }}</td>
+                    <td class="px-4 py-2 border-gray-300">{{ $profile->nama_puskesmas }}</td>
                 </tr>
                 <tr class="border-b">
                     <td class="px-4 py-2 font-semibold">Email</td>
                     <td class="px-4 py-2">{{ $profile->email }}</td>
                 </tr>
                 @if ($profile->struktur_organisasi)
-                <tr>
+                <tr class="border border-gray-300">
                     <td class="px-4 py-2 font-semibold">Struktur Organisasi</td>
                     <td class="px-4 py-2">
                         <img src="{{ asset('storage/' . $profile->struktur_organisasi) }}"

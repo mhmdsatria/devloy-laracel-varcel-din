@@ -1,27 +1,27 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold">Carousel</h1>
-        <a href="{{ route('admin.carousel.create') }}" class="btn btn-primary">+ Tambah Gambar</a>
-    </div>
-
-    @if(session('success'))
-        <div class="p-4 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
-    @endif
-
+<div class="container">
+    <h1 class="text-2xl font-bold mb-4">Carousel</h1>
+    <a href="{{ route('admin.carousels.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Tambah Gambar</a>
+    
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        @foreach($carousels as $carousel)
-            <div class="border p-2 rounded shadow">
-                <img src="{{ asset('storage/' . $carousel->image) }}" class="w-full h-48 object-cover rounded" alt="Carousel">
-                <div class="mt-2 flex justify-between">
-                    <a href="{{ route('admin.carousel.edit', $carousel) }}" class="text-blue-600">Edit</a>
-                    <form method="POST" action="{{ route('admin.carousel.destroy', $carousel) }}" onsubmit="return confirm('Yakin hapus?')">
-                        @csrf @method('DELETE')
-                        <button class="text-red-600">Hapus</button>
+        @foreach ($carousels as $carousel)
+            <div class="bg-white p-4 rounded shadow">
+                <img src="{{ asset('storage/' . $carousel->image) }}" class="w-full h-48 object-cover mb-2">
+                <p class="text-center">{{ $carousel->title }}</p>
+                <div class="flex justify-between mt-2">
+                    <form action="{{ route('admin.carousels.destroy', $carousel) }}" method="POST" onsubmit="return confirm('Hapus gambar ini?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-full shadow">
+                            Hapus
+                        </button>
                     </form>
+                    
                 </div>
             </div>
         @endforeach
     </div>
+</div>
 @endsection

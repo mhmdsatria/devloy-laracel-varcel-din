@@ -13,7 +13,8 @@ class Post extends Model
 
     public function getRouteKeyName()
     {
-        return 'slug'; // Agar Laravel mencari berdasarkan slug, bukan id
+        // Jika di route admin, pakai ID; kalau di publik, pakai slug
+        return request()->is('admin/*') ? 'id' : 'slug';
     }
 
     // Scope untuk filtering berdasarkan request search
