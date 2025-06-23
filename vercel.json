@@ -1,9 +1,13 @@
-{
-  "version": 2,
-  "buildCommand": "vite build",
-  "outputDirectory": "dist",
-  "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
+export default defineConfig({
+  plugins: [
+    laravel({
+      input: ['resources/css/app.css', 'resources/js/app.js'],
+      refresh: true,
+    }),
+    tailwindcss(),
   ],
-  "public": true
-}
+  build: {
+    outDir: 'public/build', // pastikan output di sini
+    emptyOutDir: true,
+  },
+});
